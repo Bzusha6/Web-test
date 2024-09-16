@@ -3,80 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Among Us con CSS</title>
+    <title>Snake Game con Logros</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #000; /* Fondo negro */
-            margin: 0;
+            font-family: Arial, sans-serif;
+            text-align: center;
         }
-
-        .amongus {
-            position: relative;
-            width: 100px;
-            height: 160px;
-            background-color: #FF5733; /* Color del cuerpo */
-            border-radius: 50px; /* Bordes redondeados para el cuerpo */
+        canvas {
+            background-color: #000;
+            display: block;
+            margin: 0 auto;
         }
-
-        /* Visera (la parte del visor del personaje) */
-        .amongus::before {
-            content: '';
-            position: absolute;
-            top: 30px;
-            left: 15px;
-            width: 70px;
-            height: 40px;
-            background-color: #A3E4D7; /* Color de la visera */
-            border-radius: 20px 20px 10px 10px;
-            border: 3px solid #333; /* Borde de la visera */
+        #logros {
+            margin-top: 20px;
         }
-
-        /* Mochila */
-        .backpack {
-            position: absolute;
-            top: 40px;
-            right: -30px;
-            width: 50px;
-            height: 90px;
-            background-color: #FF5733; /* Mismo color que el cuerpo */
-            border-radius: 25px;
-        }
-
-        /* Pierna izquierda */
-        .leg-left {
-            position: absolute;
-            bottom: 0;
-            left: 20px;
-            width: 30px;
-            height: 50px;
-            background-color: #FF5733;
-            border-radius: 15px;
-        }
-
-        /* Pierna derecha */
-        .leg-right {
-            position: absolute;
-            bottom: 0;
-            right: 20px;
-            width: 30px;
-            height: 50px;
-            background-color: #FF5733;
-            border-radius: 15px;
+        #logros li {
+            list-style-type: none;
+            font-size: 1.2em;
         }
     </style>
 </head>
 <body>
-    <!-- Contenedor del personaje -->
-    <div class="amongus">
-        <!-- Mochila del personaje -->
-        <div class="backpack"></div>
-        <!-- Piernas del personaje -->
-        <div class="leg-left"></div>
-        <div class="leg-right"></div>
+    <h1>Snake Game</h1>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div id="info">
+        <p>Puntaje: <span id="puntaje">0</span> | Manzanas Comidas: <span id="manzanasComidas">0</span></p>
     </div>
+    <ul id="logros">
+        <li id="logro1">Logro 1: Destructor de Manzanas!!! (0/500)</li>
+        <li id="logro2">Logro 2: ¿Qué pasó? (0/100)</li>
+        <li id="logro3">Logro 3: ¿Estás ahí? (0/1)</li>
+        <li id="logro4">Logro 4: Campeón!!! (0/1)</li>
+    </ul>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const box = 20;
+        let snake = [{x: 200, y: 200}];
+        let direction = 'RIGHT';
+        let apple = {
+            x: Math.floor(Math.random() * canvas.width / box) * box,
+            y: Math.floor(Math.random() * canvas.height / box) * box
+        };
+        let score = 0;
+        let applesEaten = 0;
+        let wallCrashes = 0;
+
+        const logro1Elem = document.getElementById('logro1');
+        const logro2Elem = document.getElementById('logro2');
+        const logro3Elem = document.getElementById('logro3');
+        const logro4Elem = document.getElementById('logro4');
+        
+        let logro1 = false, logro2 = false, logro3 = false, logro4 = false;
+
+        document.addEventListener('keydown', changeDirection);
+
+        function changeDirection(event) {
+            const key = event.keyCode;
+            if(key === 37 && direction !== 'RIGHT') direction = 'LEFT';
+            if(key === 38 && direction !== 'DOWN') direction = 'UP';
+            if(key === 39 && direction !== 'LEFT') direction = 'RIGHT';
+            if(key === 40 && direction !== 'UP') direction = 'DOWN';
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibuja la serpiente
+            for(let i = 0; i < snake.length; i++) {
+                ctx.fillStyle = (i === 0) ? 'green' : 'white';
+                ctx.fillRect(snake[i].x, snake[i].y, box, box);
+                ctx.strokeStyle = 'red';
+                ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+            }
+
+            // Dibuja la manzana
+            ctx.fillStyle = 'red';
+            ctx.fillRect(apple.x, apple.y, box, box);
+
+            // Movimiento de la serpiente
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            if(direction === 'LEFT') snakeX -= box;
+            if(direction === 'UP') snakeY -= box;
+            if(direction === 'RIGHT') snakeX += box;
+            if(direction === 'DOWN') snakeY += box;
+
+            // Si la serpiente se come la manzana
+            if(snakeX === apple.x && snakeY === apple.y) {
+                score++;
+                applesEaten++;
+                apple = {
+                    x: Math.floor(Math.random() * canvas.width / box) * box,
+                    y: Math.floor(Math.random() * canvas.height / box) * box
+                };
+            } else {
+                snake.pop();
+            }
+
+            const newHead = {x: snakeX, y: snakeY};
+
+            // Verifica si la serpiente choca con los bordes
+            if(snakeX < 0 || snakeY < 0 || snakeX >= canvas.width || snakeY >= canvas.height || collision(newHead, snake)) {
+                if (snakeX < 0 || snakeY < 0 || snakeX >= canvas.width || snakeY >= canvas.height) {
+                    wallCrashes++;
+                    if (wallCrashes >= 100 && !logro2) {
+                        logro2Elem.innerHTML = 'Logro 2: ¿Qué pasó? (¡Completado!)';
+                        logro2 = true;
+                    }
+                }
+                resetGame();
+            }
+
+            snake.unshift(newHead);
+
+            // Actualiza el puntaje y las manzanas comidas
+            document.getElementById('puntaje').innerText = score;
+            document.getElementById('manzanasComidas').innerText = applesEaten;
+
+            // Logro 1: Comer 500 manzanas
+            if (applesEaten >= 500 && !logro1) {
+                logro1Elem.innerHTML = 'Logro 1: Destructor de Manzanas!!! (¡Completado!)';
+                logro1 = true;
+            }
+
+            // Logro 3: Morir al llegar a 99 manzanas
+            if (applesEaten === 99 && !logro3) {
+                resetGame();
+                logro3Elem.innerHTML = 'Logro 3: ¿Estás ahí? (¡Completado!)';
+                logro3 = true;
+            }
+
+            // Logro 4: Completar los tres logros anteriores
+            if (logro1 && logro2 && logro3 && !logro4) {
+                logro4Elem.innerHTML = 'Logro 4: Campeón!!! (¡Completado!)';
+                logro4 = true;
+            }
+        }
+
+        function resetGame() {
+            snake = [{x: 200, y: 200}];
+            direction = 'RIGHT';
+            applesEaten = 0;
+        }
+
+        function collision(head, array) {
+            for(let i = 0; i < array.length; i++) {
+                if(head.x === array[i].x && head.y === array[i].y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        setInterval(draw, 100);
+    </script>
 </body>
-  </html>
+</html>
