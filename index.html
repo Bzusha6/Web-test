@@ -8,22 +8,26 @@
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
             background-color: #e9ecef;
+            margin: 0;
+            padding: 20px;
         }
         canvas {
             background-color: #000;
             display: block;
-            margin: 20px auto;
+            margin-bottom: 20px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
         }
         #info {
             margin-top: 10px;
         }
         #logros {
-            position: absolute;
-            left: 10px;
-            top: 20px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .logro {
             background-color: #f1f1f1;
@@ -36,7 +40,10 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         .controls {
-            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
         }
         .button {
             display: inline-block;
@@ -57,11 +64,8 @@
 </head>
 <body>
     <h1>Snake Game</h1>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <div id="info">
-        <p>Puntaje: <span id="puntaje">0</span> | Manzanas Comidas: <span id="manzanasComidas">0</span></p>
-    </div>
-
+    
+    <!-- Contenedor de Botones de Control -->
     <div class="controls">
         <div>
             <div class="button" id="up">↑</div>
@@ -72,8 +76,14 @@
             <div class="button" id="right">→</div>
         </div>
     </div>
+    
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    
+    <div id="info">
+        <p>Puntaje: <span id="puntaje">0</span> | Manzanas Comidas: <span id="manzanasComidas">0</span></p>
+    </div>
 
-    <!-- Logros posicionados a la izquierda -->
+    <!-- Logros posicionados debajo del lienzo -->
     <div id="logros">
         <div class="logro" id="logro1">Logro 1: Destructor de Manzanas!!! (0/500)</div>
         <div class="logro" id="logro2">Logro 2: ¿Qué pasó? (0/100)</div>
@@ -191,14 +201,4 @@
                 logro3 = true;
             }
 
-            // Logro 4: Completar los tres logros anteriores
-            if (logro1 && logro2 && logro3 && !logro4) {
-                logro4Elem.innerHTML = 'Logro 4: Campeón!!! (¡Completado!)';
-                logro4 = true;
-            }
-        }
-
-        function resetGame() {
-            snake = [{x: 200, y: 200}];
-            direction = 'RIGHT';
-            applesEaten = 0;
+            // Log
